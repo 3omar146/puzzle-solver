@@ -15,12 +15,33 @@ venv/
 .vscode/
 .idea/
 
+# Ignore everything inside data except raw images
+!data/binary/.gitkeep
+!data/contours/.gitkeep
+!data/descriptors/.gitkeep
+!data/enhanced/.gitkeep
+!data/pieces/.gitkeep
+!data/raw/.gitkeep
 
+!data/raw/
+!data/raw/**
 
+# Allow .gitkeep files (to keep empty folders)
+!.gitkeep
 
+# Ignore all image types globally
+*.png
+*.jpg
+*.jpeg
+*.bmp
+*.tiff
 
-
-
+# BUT allow raw images
+!data/raw/*.png
+!data/raw/*.jpg
+!data/raw/*.jpeg
+!data/raw/*.bmp
+!data/raw/*.tiff
 
 # Ignore generated artifacts
 output/
