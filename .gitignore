@@ -15,6 +15,13 @@ venv/
 .vscode/
 .idea/
 
+
+
+
+
+
+
+
 # Ignore generated artifacts
 output/
 results/
