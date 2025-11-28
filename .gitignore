@@ -1,0 +1,47 @@
+# Ignore Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore virtual environment
+venv/
+.env/
+
+# Ignore Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore IDE / editor files
+.vscode/
+.idea/
+
+# Ignore all image output types everywhere
+*.png
+*.jpg
+*.jpeg
+*.bmp
+*.tiff
+
+# But allow raw images in raw folder
+!dataset/raw/*.png
+!dataset/raw/*.jpg
+!dataset/raw/*.jpeg
+!dataset/raw/*.bmp
+!dataset/raw/*.tiff
+
+# Ignore generated artifacts
+output/
+results/
+artifacts/
+temp/
+tmp/
+
+# Logs
+*.log
+
+# Model files (if any)
+*.h5
+*.pth
+
+# Ignore macOS files
+.DS_Store
