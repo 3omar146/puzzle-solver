@@ -15,20 +15,19 @@ venv/
 .vscode/
 .idea/
 
-# Ignore all image output types everywhere
-*.png
-*.jpg
-*.jpeg
-*.bmp
-*.tiff
-
+# Ignore generated artifacts
+output/
+results/
+artifacts/
+temp/
+tmp/
 
 # Logs
 *.log
 
-# Model files (if any)
+# Model files
 *.h5
 *.pth
 
-# Ignore macOS files
+# macOS files
 .DS_Store
