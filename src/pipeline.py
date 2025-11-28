@@ -3,7 +3,6 @@ import cv2
 
 from src.enhancement import enhance_image
 from src.utils import save_image
-from src.thresholding import threshold_image
 
 #rest of imports goes hena
 
@@ -39,14 +38,7 @@ def process_single_image(img_path):
 
 
     # -------------------------------
-    # Step 2: Thresholding (ACTIVE)
-    # -------------------------------
-    binary = threshold_image(enhanced)
-    save_image(binary, img_name, BINARY_DIR, suffix="binary")
-
-
-    # -------------------------------
-    # Step 3: Segmentation + Extraction (NOT READY)
+    # Step 2: Segmentation + Extraction (NOT READY)
     # -------------------------------
     # contour_img, cropped_pieces, piece_metadata = segment_and_extract(
     #     original, binary, img_name
@@ -62,7 +54,7 @@ def process_single_image(img_path):
 
 
     # -------------------------------
-    # Step 4: Descriptor generation (NOT READY)
+    # Step 3: Descriptor generation (NOT READY)
     # -------------------------------
     # descriptor_dict = build_descriptor_dict(piece_metadata, cropped_pieces)
     # save_descriptor_json(descriptor_dict, img_name, DESCRIPTORS_DIR)
