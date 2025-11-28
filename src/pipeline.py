@@ -3,6 +3,7 @@ import cv2
 
 from src.enhancement import enhance_image
 from src.utils import save_image
+from src.thresholding import threshold_image
 
 #rest of imports goes hena
 
@@ -38,10 +39,10 @@ def process_single_image(img_path):
 
 
     # -------------------------------
-    # Step 2: Thresholding (NOT READY)
+    # Step 2: Thresholding (ACTIVE)
     # -------------------------------
-    # binary = threshold_image(enhanced)
-    # save_image(binary, img_name, BINARY_DIR, suffix="binary")
+    binary = threshold_image(enhanced)
+    save_image(binary, img_name, BINARY_DIR, suffix="binary")
 
 
     # -------------------------------
