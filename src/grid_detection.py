@@ -3,7 +3,7 @@ import numpy as np
 
 
 def detect_grid_size(img):
-    h, w = img.copy().shape
+    h, w = img.shape
 
     # Local variance map (helps distinguish 2×2)
     var_map = cv2.Laplacian(img, cv2.CV_64F)
@@ -73,17 +73,23 @@ def detect_grid_size(img):
     pv4, _ = score(v_norm, 4)
     ph4, _ = score(h_norm, 4)
 
-    is8 = (pv8 >= 0.6 and ph8 >= 0.6)
-    is4 = (pv4 + ph4) >= 1.0
-    is2 = (var2 > var4 * 1.25) and (var2 > var8 * 1.50)
+    is8 = (pv8 >= 0.60 and ph8 >= 0.60)
+    is4 = (pv4 + ph4) >= 1.00
+    is2 = (var2 >= var4 * 1.00) and (var2 >= var8 * 1.125)
 
-    if is8:
-        return 8
+    if is8: return 8
+    if is4: return 4
+    if is2: return 2
 
-    if is4:
-        return 4
+    is8 = var8 < var4 * 0.985
+    is4 = (var4 < var2 * 0.98)
+    is2 = var2 > var4 * 1.015
 
-    if is2:
-        return 2
+    if ph4 == 0 and pv4 == 0 and not is2: 
+        if is8: return 8
+        if is4: return 4
 
-    return 2
+    if is2: return 2
+
+    print("PV8: {:.2f}, PH8: {:.2f}, PV4: {:.2f}, PH4: {:.2f}".format(pv8, ph8, pv4, ph4))
+    print("Var2: {:.2f}, Var4: {:.2f}, Var8: {:.2f}".format(var2, var4, var8))
