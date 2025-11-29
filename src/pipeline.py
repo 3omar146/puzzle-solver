@@ -29,13 +29,13 @@ def process_single_image(img_path):
     # -------------------------------
     # Step 1: Enhancement (ACTIVE)
     # -------------------------------
-    enhanced = enhance_image(original)
+    enhanced, enhanced_clahe = enhance_image(original)
     save_image(enhanced, img_name, ENHANCED_DIR, suffix="enhanced")
 
     # -------------------------------
     # Step 2: Detect grid size (2x2, 4x4, 8x8)
     # -------------------------------
-    grid_size = detect_grid_size(enhanced)
+    grid_size = detect_grid_size(enhanced, enhanced_clahe)
     print(f"[INFO] Detected grid: {grid_size}x{grid_size}")
 
     # -------------------------------

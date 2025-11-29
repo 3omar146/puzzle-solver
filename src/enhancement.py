@@ -28,6 +28,11 @@ def enhance_image(img):
     gray      = to_grayscale(img)
     denoised  = denoise(gray)
     clahe_img = apply_clahe(denoised)
-    sharp_img = sharpen(clahe_img)
+
+    sharp_img_clahe = sharpen(clahe_img)
+    clean_img_clahe = morphology(sharp_img_clahe)
+    
+    sharp_img = sharpen(denoised)
     clean_img = morphology(sharp_img)
-    return clean_img
+
+    return clean_img, clean_img_clahe
