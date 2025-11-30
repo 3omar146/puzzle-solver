@@ -1,16 +1,22 @@
 import os
 import cv2
 
+from src.edge_detection import binary_edges
 from src.enhancement import enhance_image
 from src.utils import save_image
-from src.grid_detection import detect_grid_size
+from src.size_detection import detect_grid_size
 from src.segmentation import segment_and_extract
+from src.thresholding import threshold
 
 # Fixed output folders (since they are known)
 ENHANCED_DIR    = "data/enhanced"
 CONTOURS_DIR    = "data/contours"
-PIECES_DIR      = "data/pieces"
+COLORED_PIECES_DIR   = "data/colored_pieces"
+EDGE_PIECES_DIR   = "data/edge_pieces"
 DESCRIPTORS_DIR = "data/descriptors"
+BINARY_DIR = "data/binary"
+EDGES_DIR = "data/edges"
+
 
 correct = 0
 wrong = 0
@@ -36,17 +42,37 @@ def process_single_image(img_path,grid_size,auto_detection):
     save_image(enhanced, img_name,
                os.path.join(ENHANCED_DIR, grid_folder),
                suffix="enhanced")
+    
 
     # -------------------------------
-    # Step 2: Detect grid size (2x2, 4x4, 8x8)
+    # Step 2: apply thresholding
+    # -------------------------------
+    binary = threshold(enhanced)
+    save_image(binary, img_name,
+               os.path.join(BINARY_DIR, grid_folder),
+               suffix="binary")
+    
+    # -------------------------------
+    # Step 3: apply edge detection
+    # -------------------------------
+    edges = binary_edges(binary)
+    save_image(edges, img_name,
+               os.path.join(EDGES_DIR, grid_folder),
+               suffix="edges")
+    
+
+    # -------------------------------
+    # Step 4(if auto detection is enabled): Detect grid size (2x2, 4x4, 8x8)
     # -------------------------------
     if(auto_detection):
         grid_size = detect_grid_size(enhanced, enhanced_clahe)
         print(f"[INFO] Detected grid by the size detection algorithm: {grid_size}x{grid_size}")
 
+
     # -------------------------------
-    # Step 3: Segmentation + Extraction (NOT READY)
+    # Step 5: Segmentation + Extraction
     # -------------------------------
+    #for original image
     contour_img, cropped_pieces, piece_metadata = segment_and_extract(
          original,grid_size, img_name
      )
@@ -56,17 +82,30 @@ def process_single_image(img_path,grid_size,auto_detection):
                 suffix="contours")    
     
 
-    piece_folder = os.path.join(PIECES_DIR, grid_folder, img_name)
+    piece_folder = os.path.join(COLORED_PIECES_DIR, grid_folder, img_name)
     os.makedirs(piece_folder, exist_ok=True)
 
     for piece_info, piece_img in zip(piece_metadata, cropped_pieces):
         save_image(piece_img, img_name,
                 piece_folder,
-                suffix=f"{piece_info['id']}") 
+                suffix=f"{piece_info['id']}")
+        
 
+    #for edge binary image
+    _, cropped_edge_pieces, edge_piece_metadata = segment_and_extract(
+        edges,grid_size, img_name
+     )
 
+    edge_piece_folder = os.path.join(EDGE_PIECES_DIR, grid_folder, img_name)
+    os.makedirs(piece_folder, exist_ok=True)
+
+    for edge_piece_info, edge_piece_img in zip(edge_piece_metadata, cropped_edge_pieces):
+        save_image(edge_piece_img, img_name,
+                edge_piece_folder,
+                suffix=f"{edge_piece_info['id']}")
+        
     # -------------------------------
-    # Step 4: Descriptor generation (NOT READY)
+    # Step 6: Descriptor generation (NOT READY)
     # -------------------------------
     # descriptor_dict = build_descriptor_dict(piece_metadata, cropped_pieces)
     # save_descriptor_json(descriptor_dict, img_name, DESCRIPTORS_DIR)

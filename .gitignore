@@ -17,6 +17,7 @@ venv/
 
 # Ignore everything inside data except raw images
 !data/binary/.gitkeep
+!data/edges/.gitkeep
 !data/contours/.gitkeep
 !data/descriptors/.gitkeep
 !data/enhanced/.gitkeep

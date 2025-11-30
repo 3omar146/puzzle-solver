@@ -21,7 +21,9 @@ def sharpen(img):
 def morphology(img):
     # light cleanup, avoids damaging cartoon shapes
     kernel = np.ones((2,2), np.uint8)
-    opened = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel, iterations=1)
+    opened = img
+    if np.mean(img) < 80:
+        opened = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel, iterations=1)
     return opened
 
 def enhance_image(img):
