@@ -1,6 +1,20 @@
 import cv2
 import os
 
+# Fixed output folders (since they are known)
+ENHANCED_DIR    = "data/enhanced"
+CONTOURS_DIR    = "data/contours"
+PIECES_DIR      = "data/pieces"
+DESCRIPTORS_DIR = "data/descriptors"
+
+def create_output_folders():
+    for grid in ["2x2", "4x4", "8x8"]:
+        os.makedirs(os.path.join(ENHANCED_DIR, grid), exist_ok=True)
+        os.makedirs(os.path.join(CONTOURS_DIR, grid), exist_ok=True)
+        os.makedirs(os.path.join(PIECES_DIR, grid), exist_ok=True)
+        os.makedirs(os.path.join(DESCRIPTORS_DIR, grid), exist_ok=True)
+
+
 def save_image(img, img_name, output_dir, suffix=""):
     """
     Saves an image to the specified output directory with an optional suffix.
