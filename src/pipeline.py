@@ -12,6 +12,8 @@ from src.thresholding import threshold
 ENHANCED_DIR    = "data/enhanced"
 CONTOURS_DIR    = "data/contours"
 COLORED_PIECES_DIR   = "data/colored_pieces"
+BINARY_PIECES_DIR   = "data/binary_pieces"
+
 EDGE_PIECES_DIR   = "data/edge_pieces"
 DESCRIPTORS_DIR = "data/descriptors"
 BINARY_DIR = "data/binary"
@@ -22,93 +24,79 @@ correct = 0
 wrong = 0
 total = 0
 
-def process_single_image(img_path,grid_size,auto_detection):
+def process_single_image(img_path, grid_size, auto_detection):
     """
-    Runs the enhancement step on a single image.
-    Other steps (thresholding, segmentation, descriptors)
-    are commented out until implemented.
+    FINAL CORRECT LOGIC:
+    1. Enhance entire image
+    2. Detect grid size (if auto)
+    3. Segment ORIGINAL into pieces
+    4. Threshold & edge detect per piece
     """
-    grid_folder = f"{grid_size}x{grid_size}"
 
-    img_name = os.path.splitext(os.path.basename(img_path))[0]
-    original = cv2.imread(img_path)
+    grid_folder = f"{grid_size}x{grid_size}"
+    img_name    = os.path.splitext(os.path.basename(img_path))[0]
+    original    = cv2.imread(img_path)
 
     print(f"\nProcessing {img_name}...")
 
-    # -------------------------------
-    # Step 1: Enhancement (ACTIVE)
-    # -------------------------------
+    # ----------------------------------
+    # Step 1: Enhance entire image
+    # ----------------------------------
     enhanced, enhanced_clahe = enhance_image(original)
     save_image(enhanced, img_name,
                os.path.join(ENHANCED_DIR, grid_folder),
                suffix="enhanced")
-    
 
-    # -------------------------------
-    # Step 2: apply thresholding
-    # -------------------------------
-    binary = threshold(enhanced)
-    save_image(binary, img_name,
-               os.path.join(BINARY_DIR, grid_folder),
-               suffix="binary")
-    
-    # -------------------------------
-    # Step 3: apply edge detection
-    # -------------------------------
-    edges = binary_edges(binary)
-    save_image(edges, img_name,
-               os.path.join(EDGES_DIR, grid_folder),
-               suffix="edges")
-    
-
-    # -------------------------------
-    # Step 4(if auto detection is enabled): Detect grid size (2x2, 4x4, 8x8)
-    # -------------------------------
-    if(auto_detection):
+    # ----------------------------------
+    # Step 2: Detect grid size FIRST
+    # ----------------------------------
+    if auto_detection:
         grid_size = detect_grid_size(enhanced, enhanced_clahe)
-        print(f"[INFO] Detected grid by the size detection algorithm: {grid_size}x{grid_size}")
+        print(f"[INFO] Detected grid: {grid_size}x{grid_size}")
 
-
-    # -------------------------------
-    # Step 5: Segmentation + Extraction
-    # -------------------------------
-    #for original image
+    # ----------------------------------
+    # Step 3: Segment ORIGINAL
+    # ----------------------------------
     contour_img, cropped_pieces, piece_metadata = segment_and_extract(
-         original,grid_size, img_name
-     )
-    
+        original, grid_size, img_name
+    )
+
     save_image(contour_img, img_name,
-                os.path.join(CONTOURS_DIR, grid_folder),
-                suffix="contours")    
-    
+               os.path.join(CONTOURS_DIR, grid_folder),
+               suffix="contours")
 
-    piece_folder = os.path.join(COLORED_PIECES_DIR, grid_folder, img_name)
-    os.makedirs(piece_folder, exist_ok=True)
+    colored_piece_folder = os.path.join(COLORED_PIECES_DIR, grid_folder, img_name)
+    os.makedirs(colored_piece_folder, exist_ok=True)
 
+    # Save original pieces
     for piece_info, piece_img in zip(piece_metadata, cropped_pieces):
         save_image(piece_img, img_name,
-                piece_folder,
-                suffix=f"{piece_info['id']}")
-        
+                   colored_piece_folder,
+                   suffix=f"{piece_info['id']}")
 
-    #for edge binary image
-    _, cropped_edge_pieces, edge_piece_metadata = segment_and_extract(
-        edges,grid_size, img_name
-     )
+    # ----------------------------------
+    # Step 4: Threshold & Edge-Detect PER PIECE
+    # ----------------------------------
 
-    edge_piece_folder = os.path.join(EDGE_PIECES_DIR, grid_folder, img_name)
-    os.makedirs(piece_folder, exist_ok=True)
+    binary_piece_folder = os.path.join(BINARY_PIECES_DIR, grid_folder, img_name)
+    edge_piece_folder   = os.path.join(EDGE_PIECES_DIR, grid_folder, img_name)
 
-    for edge_piece_info, edge_piece_img in zip(edge_piece_metadata, cropped_edge_pieces):
-        save_image(edge_piece_img, img_name,
-                edge_piece_folder,
-                suffix=f"{edge_piece_info['id']}")
-        
-    # -------------------------------
-    # Step 6: Descriptor generation (NOT READY)
-    # -------------------------------
-    # descriptor_dict = build_descriptor_dict(piece_metadata, cropped_pieces)
-    # save_descriptor_json(descriptor_dict, img_name, DESCRIPTORS_DIR)
+    os.makedirs(binary_piece_folder, exist_ok=True)
+    os.makedirs(edge_piece_folder, exist_ok=True)
+
+    for piece_info, piece_img in zip(piece_metadata, cropped_pieces):
+
+        # Threshold per piece
+        binary_piece = threshold(piece_img)
+        save_image(binary_piece, img_name,
+                   binary_piece_folder,
+                   suffix=f"{piece_info['id']}")
+
+        # Edge-detect per piece
+        edge_piece = binary_edges(binary_piece)
+        save_image(edge_piece, img_name,
+                   edge_piece_folder,
+                   suffix=f"{piece_info['id']}")
 
     print(f"Finished {img_name}")
     return grid_size
