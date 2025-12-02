@@ -1,12 +1,12 @@
 import os
 import cv2
 
-from src.edge_detection import binary_edges
+from src.edge_detection import binary_edges,canny_edges
 from src.enhancement import enhance_image
 from src.utils import save_image
 from src.size_detection import detect_grid_size
 from src.segmentation import segment_and_extract
-from src.thresholding import threshold
+from src.thresholding import threshold_adaptive,threshold_otsu
 
 # Fixed output folders (since they are known)
 ENHANCED_DIR    = "data/enhanced"
@@ -55,7 +55,7 @@ def process_single_image(img_path, grid_size, auto_detection):
         print(f"[INFO] Detected grid: {grid_size}x{grid_size}")
 
     # ----------------------------------
-    # Step 3: Segment ORIGINAL
+    # Step 3: Segment ORIGINAL & ENHANCED
     # ----------------------------------
     contour_img, cropped_pieces, piece_metadata = segment_and_extract(
         original, grid_size, img_name
@@ -64,6 +64,10 @@ def process_single_image(img_path, grid_size, auto_detection):
     save_image(contour_img, img_name,
                os.path.join(CONTOURS_DIR, grid_folder),
                suffix="contours")
+
+    _, cropped_enhanced_pieces, enhanced_piece_metadata = segment_and_extract(
+        enhanced_clahe, grid_size, img_name
+    )
 
     colored_piece_folder = os.path.join(COLORED_PIECES_DIR, grid_folder, img_name)
     os.makedirs(colored_piece_folder, exist_ok=True)
@@ -84,16 +88,16 @@ def process_single_image(img_path, grid_size, auto_detection):
     os.makedirs(binary_piece_folder, exist_ok=True)
     os.makedirs(edge_piece_folder, exist_ok=True)
 
-    for piece_info, piece_img in zip(piece_metadata, cropped_pieces):
+    for piece_info, piece_img in zip(enhanced_piece_metadata, cropped_enhanced_pieces):
 
         # Threshold per piece
-        binary_piece = threshold(piece_img)
+        binary_piece = threshold_adaptive(piece_img)
         save_image(binary_piece, img_name,
                    binary_piece_folder,
                    suffix=f"{piece_info['id']}")
 
         # Edge-detect per piece
-        edge_piece = binary_edges(binary_piece)
+        edge_piece = canny_edges(piece_img)
         save_image(edge_piece, img_name,
                    edge_piece_folder,
                    suffix=f"{piece_info['id']}")
