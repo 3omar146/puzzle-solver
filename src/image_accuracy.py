@@ -16,14 +16,15 @@ def pixel_accuracy(pred_path, truth_path, grid_size):
 
     step_h = H // grid_size
     step_w = W // grid_size
-    
-    seam_thickness = 2  # ignore 2px border around seams
+
+    # ignore 2px border around seams
+    seam_thickness = 2
 
     for i in range(1, grid_size):
         mask[i * step_h - seam_thickness : i * step_h + seam_thickness, :] = 0
         mask[:, i * step_w - seam_thickness : i * step_w + seam_thickness] = 0
 
-    # Blur-based pixel comparison for robustness
+    # Blur-based pixel comparison
     pred_blur = cv2.GaussianBlur(pred,  (3,3), 0)
     truth_blur = cv2.GaussianBlur(truth, (3,3), 0)
 

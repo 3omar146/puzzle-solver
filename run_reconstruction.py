@@ -34,7 +34,6 @@ def run(folder):
         out_path = os.path.join(out, f"{img_id}_{folder}.png")
         reconstruct(placement, ids, pieces, out_path)
 
-        # Ground truth path
         truth = os.path.join("data/raw/Gravity Falls/correct", f"{img_id}.png")
 
         # Evaluate reconstruction via pixel accuracy
