@@ -1,6 +1,6 @@
 import cv2
 import os
-import paths
+from src import paths
 
 ENHANCED_DIR = paths.ENHANCED_DIR
 CONTOURS_DIR = paths.CONTOURS_DIR

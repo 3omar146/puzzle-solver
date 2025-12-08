@@ -7,7 +7,7 @@ from src.utils import save_image
 from src.size_detection import detect_grid_size
 from src.segmentation import segment_and_extract
 from src.thresholding import threshold_adaptive, threshold_otsu
-import paths
+from src import paths
 
 ENHANCED_DIR = paths.ENHANCED_DIR
 CONTOURS_DIR = paths.CONTOURS_DIR
@@ -68,7 +68,7 @@ def process_single_image(img_path, grid_size, auto_detection):
                    colored_piece_folder,
                    suffix=f"{piece_info['id']}")
 
-    # Step 4: Threshold & edge-detect per piecen
+    # Step 4: Threshold & edge-detect per piece
     binary_piece_folder = os.path.join(BINARY_PIECES_DIR, grid_folder, img_name)
     edge_piece_folder   = os.path.join(EDGE_PIECES_DIR, grid_folder, img_name)
 
@@ -95,22 +95,21 @@ def process_single_image(img_path, grid_size, auto_detection):
 results = []
 
 def process_dataset(dataset_folder, auto_detection):
-    if auto_detection:
-        global correct, wrong, total
+    global correct, wrong, total
 
-        correct = 0
-        wrong = 0
-        total = 0
+    correct = 0
+    wrong = 0
+    total = 0
 
-        name = os.path.basename(dataset_folder)
+    name = os.path.basename(dataset_folder)
         
-        expected = None
-        if "2x2" in name:
-            expected = 2
-        elif "4x4" in name:
-            expected = 4
-        elif "8x8" in name:
-            expected = 8
+    expected = None
+    if "2x2" in name:
+        expected = 2
+    elif "4x4" in name:
+        expected = 4
+    elif "8x8" in name:
+        expected = 8
 
     filenames = os.listdir(dataset_folder)
 
