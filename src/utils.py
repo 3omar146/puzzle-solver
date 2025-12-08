@@ -1,11 +1,11 @@
 import cv2
 import os
+import paths
 
-# Fixed output folders (since they are known)
-ENHANCED_DIR    = "data/enhanced"
-CONTOURS_DIR    = "data/contours"
-PIECES_DIR      = "data/pieces"
-DESCRIPTORS_DIR = "data/descriptors"
+ENHANCED_DIR = paths.ENHANCED_DIR
+CONTOURS_DIR = paths.CONTOURS_DIR
+PIECES_DIR = paths.PIECES_DIR
+DESCRIPTORS_DIR = paths.DESCRIPTORS_DIR
 
 def create_output_folders():
     for grid in ["2x2", "4x4", "8x8"]:

@@ -1,24 +1,21 @@
 import os
 import cv2
 
-from src.edge_detection import binary_edges,canny_edges
+from src.edge_detection import binary_edges, canny_edges
 from src.enhancement import enhance_image
 from src.utils import save_image
 from src.size_detection import detect_grid_size
 from src.segmentation import segment_and_extract
-from src.thresholding import threshold_adaptive,threshold_otsu
+from src.thresholding import threshold_adaptive, threshold_otsu
+import paths
 
-# Fixed output folders (since they are known)
-ENHANCED_DIR    = "data/enhanced"
-CONTOURS_DIR    = "data/contours"
-COLORED_PIECES_DIR   = "data/colored_pieces"
-BINARY_PIECES_DIR   = "data/binary_pieces"
-
-EDGE_PIECES_DIR   = "data/edge_pieces"
-DESCRIPTORS_DIR = "data/descriptors"
-BINARY_DIR = "data/binary"
-EDGES_DIR = "data/edges"
-
+ENHANCED_DIR = paths.ENHANCED_DIR
+CONTOURS_DIR = paths.CONTOURS_DIR
+PIECES_DIR = paths.PIECES_DIR
+DESCRIPTORS_DIR = paths.DESCRIPTORS_DIR
+COLORED_PIECES_DIR = paths.COLORED_PIECES_DIR
+BINARY_PIECES_DIR = paths.BINARY_PIECES_DIR
+EDGE_PIECES_DIR = paths.EDGE_PIECES_DIR
 
 correct = 0
 wrong = 0
@@ -26,37 +23,30 @@ total = 0
 
 def process_single_image(img_path, grid_size, auto_detection):
     """
-    FINAL CORRECT LOGIC:
     1. Enhance entire image
     2. Detect grid size (if auto)
-    3. Segment ORIGINAL into pieces
+    3. Segment into pieces
     4. Threshold & edge detect per piece
     """
 
     grid_folder = f"{grid_size}x{grid_size}"
-    img_name    = os.path.splitext(os.path.basename(img_path))[0]
-    original    = cv2.imread(img_path)
+    img_name = os.path.splitext(os.path.basename(img_path))[0]
+    original = cv2.imread(img_path)
 
     print(f"\nProcessing {img_name}...")
 
-    # ----------------------------------
     # Step 1: Enhance entire image
-    # ----------------------------------
     enhanced, enhanced_clahe = enhance_image(original)
     save_image(enhanced, img_name,
                os.path.join(ENHANCED_DIR, grid_folder),
                suffix="enhanced")
 
-    # ----------------------------------
-    # Step 2: Detect grid size FIRST
-    # ----------------------------------
+    # Step 2: Detect grid size
     if auto_detection:
         grid_size = detect_grid_size(enhanced, enhanced_clahe)
         print(f"[INFO] Detected grid: {grid_size}x{grid_size}")
 
-    # ----------------------------------
-    # Step 3: Segment ORIGINAL & ENHANCED
-    # ----------------------------------
+    # Step 3: Segment original & enhanced
     contour_img, cropped_pieces, piece_metadata = segment_and_extract(
         original, grid_size, img_name
     )
@@ -78,10 +68,7 @@ def process_single_image(img_path, grid_size, auto_detection):
                    colored_piece_folder,
                    suffix=f"{piece_info['id']}")
 
-    # ----------------------------------
-    # Step 4: Threshold & Edge-Detect PER PIECE
-    # ----------------------------------
-
+    # Step 4: Threshold & edge-detect per piecen
     binary_piece_folder = os.path.join(BINARY_PIECES_DIR, grid_folder, img_name)
     edge_piece_folder   = os.path.join(EDGE_PIECES_DIR, grid_folder, img_name)
 
@@ -89,14 +76,13 @@ def process_single_image(img_path, grid_size, auto_detection):
     os.makedirs(edge_piece_folder, exist_ok=True)
 
     for piece_info, piece_img in zip(enhanced_piece_metadata, cropped_enhanced_pieces):
-
-        # Threshold per piece
+        # Threshold
         binary_piece = threshold_adaptive(piece_img)
         save_image(binary_piece, img_name,
                    binary_piece_folder,
                    suffix=f"{piece_info['id']}")
 
-        # Edge-detect per piece
+        # Edge-detect
         edge_piece = canny_edges(piece_img)
         save_image(edge_piece, img_name,
                    edge_piece_folder,
@@ -106,56 +92,48 @@ def process_single_image(img_path, grid_size, auto_detection):
     return grid_size
 
 
-
 results = []
 
 def process_dataset(dataset_folder, auto_detection):
-    global correct, wrong, total
+    if auto_detection:
+        global correct, wrong, total
 
-    correct = 0
-    wrong = 0
-    total = 0
+        correct = 0
+        wrong = 0
+        total = 0
 
-    name = os.path.basename(dataset_folder)
-    
-    expected = None
-    if "2x2" in name:
-        expected = 2
-    elif "4x4" in name:
-        expected = 4
-    elif "8x8" in name:
-        expected = 8
+        name = os.path.basename(dataset_folder)
+        
+        expected = None
+        if "2x2" in name:
+            expected = 2
+        elif "4x4" in name:
+            expected = 4
+        elif "8x8" in name:
+            expected = 8
 
-    if expected is None:
-        print(f"[ERROR] Folder name must contain grid size: {name}")
-        return
-
-    filenames = [f for f in os.listdir(dataset_folder)
-                 if f.lower().endswith((".jpg", ".png", ".jpeg", ".bmp"))]
-
-    print(f"Found {len(filenames)} images.")
+    filenames = os.listdir(dataset_folder)
 
     for filename in filenames:
         img_path = os.path.join(dataset_folder, filename)
 
         detected = process_single_image(img_path, expected, auto_detection)
         
-        total += 1
+        if auto_detection:
+            total += 1
 
-        if detected is None:
-            wrong += 1
-        elif detected == expected:
-            correct += 1
-        else:
-            wrong += 1
+            if detected is None: wrong += 1
+            elif detected == expected: correct += 1
+            else: wrong += 1
 
-    results.append({
-        "dataset": name,
-        "correct": correct,
-        "wrong": wrong,
-        "total": total,
-        "accuracy": (correct / total * 100) if total != 0 else 0
-    })
+    if auto_detection:
+        results.append({
+            "dataset": name,
+            "correct": correct,
+            "wrong": wrong,
+            "total": total,
+            "accuracy": (correct / total * 100) if total != 0 else 0
+        })
 
 
 def print_accuracy_table():
