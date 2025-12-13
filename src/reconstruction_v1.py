@@ -87,34 +87,39 @@ def edge_color_distance(a_bgr, b_bgr, orientation="vertical"):
     return d
 
 
-# LOAD PIECES
-def load_pieces(edge_piece_dir: Path):
+def start_reconstruction_v1(color_pieces, grid_size):
+    n = grid_size * grid_size
+    if len(color_pieces) != n:
+        raise ValueError(f"Expected {n} pieces, got {len(color_pieces)}")
+
+    # Build piece dicts
     pieces = []
-
-    edge_piece_dir = Path(edge_piece_dir)
-
-    for edge_path in sorted(edge_piece_dir.glob("*.png")):
-        edge_img = cv2.imread(str(edge_path), cv2.IMREAD_GRAYSCALE)
-        if edge_img is None:
-            continue
-
-        # Map: EDGE_PIECES_DIR to COLORED_PIECES_DIR
-        rel = edge_path.relative_to(EDGE_PIECES_DIR)
-        color_path = Path(COLORED_PIECES_DIR) / rel
-
-        color_img = cv2.imread(str(color_path), cv2.IMREAD_COLOR)
-
-        if color_img is None:
-            continue
-
-        top, right, bottom, left = slice_edges_color(color_img)
-
+    for img in color_pieces:
+        top, right, bottom, left = slice_edges_color(img)
         pieces.append({
-            "src": str(color_path),
-            "top": top, "right": right, "bottom": bottom, "left": left
+            "img": img,
+            "top": top,
+            "right": right,
+            "bottom": bottom,
+            "left": left,
         })
 
-    return pieces
+    # Solve
+    if grid_size == 2:
+        tl, tr, bl, br = solve_2x2(pieces) # type: ignore
+        grid = [[tl, tr], [bl, br]]
+    else:
+        grid = solve_NxN(pieces, grid_size)
+
+    # Assemble
+    h, w = color_pieces[0].shape[:2]
+    canvas = np.zeros((grid_size*h, grid_size*w, 3), np.uint8)
+
+    for r in range(grid_size):
+        for c in range(grid_size):
+            canvas[r*h:(r+1)*h, c*w:(c+1)*w] = grid[r][c]["img"]
+
+    return canvas
 
 
 # SOLVERS
@@ -140,21 +145,26 @@ def solve_NxN(pieces, size):
     board = [[None] * size for _ in range(size)]
     pool = list(pieces)
 
-    for row in range(size):
-        for col in range(size):
+    for r in range(size):
+        for c in range(size):
             best = None
             best_cost = float("inf")
+            best_idx = -1
 
-            for piece in pool:
+            for i, piece in enumerate(pool):
                 total = 0.0
 
-                if col > 0 and board[row][col - 1] is not None:
-                    left = board[row][col - 1]
-                    total += edge_color_distance(left["right"], piece["left"], "vertical")
+                if c > 0:
+                    left = board[r][c - 1]
+                    total += edge_color_distance(
+                        left["right"], piece["left"], "vertical"
+                    )
 
-                if row > 0 and board[row - 1][col] is not None:
-                    top = board[row - 1][col]
-                    total += edge_color_distance(top["bottom"], piece["top"], "horizontal")
+                if r > 0:
+                    top = board[r - 1][c]
+                    total += edge_color_distance(
+                        top["bottom"], piece["top"], "horizontal"
+                    )
 
                 if not np.isfinite(total):
                     total = 1e9
@@ -162,12 +172,14 @@ def solve_NxN(pieces, size):
                 if total < best_cost:
                     best_cost = total
                     best = piece
+                    best_idx = i
 
             if best is None:
+                best_idx = 0
                 best = pool[0]
 
-            board[row][col] = best
-            pool.remove(best)
+            board[r][c] = best
+            pool.pop(best_idx)
 
     return board
 
