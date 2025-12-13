@@ -1,21 +1,13 @@
 import os
 import cv2
 
-from src.edge_detection import binary_edges, canny_edges
+from src.edge_detection import canny_edges
 from src.enhancement import enhance_image
 from src.utils import save_image
 from src.size_detection import detect_grid_size
 from src.segmentation import segment_and_extract
-from src.thresholding import threshold_adaptive, threshold_otsu
-from src import paths
-
-ENHANCED_DIR = paths.ENHANCED_DIR
-CONTOURS_DIR = paths.CONTOURS_DIR
-PIECES_DIR = paths.PIECES_DIR
-DESCRIPTORS_DIR = paths.DESCRIPTORS_DIR
-COLORED_PIECES_DIR = paths.COLORED_PIECES_DIR
-BINARY_PIECES_DIR = paths.BINARY_PIECES_DIR
-EDGE_PIECES_DIR = paths.EDGE_PIECES_DIR
+from src.thresholding import threshold_adaptive
+from src.paths import ENHANCED_DIR, CONTOURS_DIR, COLORED_PIECES_DIR, BINARY_PIECES_DIR, EDGE_PIECES_DIR
 
 correct = 0
 wrong = 0
@@ -133,7 +125,6 @@ def process_dataset(dataset_folder, auto_detection):
             "total": total,
             "accuracy": (correct / total * 100) if total != 0 else 0
         })
-
 
 def print_accuracy_table():
     print("\nFinal Accuracy Table:\n")
