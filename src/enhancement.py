@@ -5,7 +5,6 @@ def to_grayscale(img):
     return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 def denoise_gaussian(gray):
-    # VERY light smoothing ONLY to reduce tiny camera noise
     return cv2.GaussianBlur(gray, (3,3), sigmaX=0.5)
 
 def denoise_bilateral(gray):
@@ -15,17 +14,14 @@ sigmaSpace = 10
 )
 
 def apply_clahe(gray):
-    # CLAHE causes patchiness on cartoon pieces — keep it low
     clahe = cv2.createCLAHE(clipLimit=1.0, tileGridSize=(10,10))
     return clahe.apply(gray)
 
 def sharpen(img):
-    # stronger edge sharpening but controlled
     blur = cv2.GaussianBlur(img, (0,0), sigmaX=1.0)
     return cv2.addWeighted(img, 2, blur, -1, 0)
 
 def morphology(img):
-    # light cleanup, avoids damaging cartoon shapes
     kernel = np.ones((2,2), np.uint8)
     opened = img
     if np.mean(img) < 80:
@@ -34,15 +30,11 @@ def morphology(img):
 
 def enhance_image(img):  
     gray = to_grayscale(img)
-
     denoised = denoise_bilateral(gray)
     
-
-    # CLAHE branch
     clahe_img = apply_clahe(denoised)
     sharp_img_clahe = sharpen(clahe_img)
 
-    # NON-CLAHE branch
     sharp_img = sharpen(denoised)
 
     return sharp_img, sharp_img_clahe
