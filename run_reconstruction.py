@@ -1,12 +1,13 @@
 import os
 import cv2
 from pathlib import Path
+
 from src.paths import COLORED_PIECES_DIR, RECONSTRUCTED_DIR
 
 from src.reconstruction_v1 import start_reconstruction_v1
 from src.reconstruction_v2 import start_reconstruction_v2
 
-RECONSTRUCTED_V2 = False
+RECONSTRUCTED_V2 = True
 
 os.makedirs(RECONSTRUCTED_DIR, exist_ok=True)
 
