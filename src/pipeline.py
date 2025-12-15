@@ -13,7 +13,7 @@ ENHANCED_DIR    = "data/enhanced"
 CONTOURS_DIR    = "data/contours"
 COLORED_PIECES_DIR   = "data/colored_pieces"
 BINARY_PIECES_DIR   = "data/binary_pieces"
-
+ENHANCED_PIECES_DIR = "data/enhanced_pieces"
 EDGE_PIECES_DIR   = "data/edge_pieces"
 DESCRIPTORS_DIR = "data/descriptors"
 BINARY_DIR = "data/binary"
@@ -74,6 +74,15 @@ def process_single_image(img_path, grid_size, auto_detection):
 
     # Save original pieces
     for piece_info, piece_img in zip(piece_metadata, cropped_pieces):
+        save_image(piece_img, img_name,
+                   colored_piece_folder,
+                   suffix=f"{piece_info['id']}")
+    
+    # Save enhanced pieces
+    colored_piece_folder = os.path.join(ENHANCED_PIECES_DIR, grid_folder, img_name)
+    os.makedirs(colored_piece_folder, exist_ok=True)
+
+    for piece_info, piece_img in zip(enhanced_piece_metadata, cropped_enhanced_pieces):
         save_image(piece_img, img_name,
                    colored_piece_folder,
                    suffix=f"{piece_info['id']}")
