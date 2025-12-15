@@ -1,11 +1,5 @@
 import cv2
 import os
-from src import paths
-
-ENHANCED_DIR = paths.ENHANCED_DIR
-CONTOURS_DIR = paths.CONTOURS_DIR
-PIECES_DIR = paths.PIECES_DIR
-DESCRIPTORS_DIR = paths.DESCRIPTORS_DIR
 
 def save_image(img, img_name, output_dir, suffix=""):
     os.makedirs(output_dir, exist_ok=True)

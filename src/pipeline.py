@@ -6,19 +6,15 @@ from src.enhancement import enhance_image
 from src.utils import save_image
 from src.size_detection import detect_grid_size
 from src.segmentation import segment_and_extract
-from src.thresholding import threshold_adaptive,threshold_otsu
-
-# Fixed output folders (since they are known)
-ENHANCED_DIR    = "data/enhanced"
-CONTOURS_DIR    = "data/contours"
-COLORED_PIECES_DIR   = "data/colored_pieces"
-BINARY_PIECES_DIR   = "data/binary_pieces"
-ENHANCED_PIECES_DIR = "data/enhanced_pieces"
-EDGE_PIECES_DIR   = "data/edge_pieces"
-DESCRIPTORS_DIR = "data/descriptors"
-BINARY_DIR = "data/binary"
-EDGES_DIR = "data/edges"
-
+from src.thresholding import threshold_adaptive
+from src.paths import (
+    ENHANCED_DIR,
+    CONTOURS_DIR,
+    COLORED_PIECES_DIR,
+    BINARY_PIECES_DIR,
+    ENHANCED_PIECES_DIR,
+    EDGE_PIECES_DIR,
+)
 
 correct = 0
 wrong = 0
@@ -72,12 +68,12 @@ def process_single_image(img_path, grid_size, auto_detection):
                    suffix=f"{piece_info['id']}")
     
     # Save enhanced pieces
-    colored_piece_folder = os.path.join(ENHANCED_PIECES_DIR, grid_folder, img_name)
-    os.makedirs(colored_piece_folder, exist_ok=True)
+    enhanced_piece_folder = os.path.join(ENHANCED_PIECES_DIR, grid_folder, img_name)
+    os.makedirs(enhanced_piece_folder, exist_ok=True)
 
     for piece_info, piece_img in zip(enhanced_piece_metadata, cropped_enhanced_pieces):
         save_image(piece_img, img_name,
-                   colored_piece_folder,
+                   enhanced_piece_folder,
                    suffix=f"{piece_info['id']}")
 
     # Step 4: Threshold & edge-detect per piece

@@ -1,9 +1,6 @@
 import cv2
 import numpy as np
 from itertools import permutations
-from pathlib import Path
-
-from src.paths import EDGE_PIECES_DIR, COLORED_PIECES_DIR
 
 # EDGE SLICING
 def slice_edges_color(img):
