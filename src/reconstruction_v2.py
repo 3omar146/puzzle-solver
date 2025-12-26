@@ -60,12 +60,7 @@ def score_edges(horizontal_data, vertical_data):
 
     for piece_idx in range(num_pieces):
         for cost_matrix, variance_matrix, orientation, best_incoming in (
-            (
-                horizontal_cost,
-                horizontal_variance,
-                HORIZONTAL,
-                best_horizontal_incoming,
-            ),
+            (horizontal_cost, horizontal_variance, HORIZONTAL, best_horizontal_incoming),
             (vertical_cost, vertical_variance, VERTICAL, best_vertical_incoming),
         ):
             cost_row = cost_matrix[piece_idx]
